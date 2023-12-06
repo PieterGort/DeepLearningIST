@@ -300,10 +300,10 @@ def main():
     # print(clf.score(dev_X, dev_y))
 
     # compare MLP results with sklearn MLP package
-    clf = MLPsklearn(hidden_layer_sizes=(opt.hidden_size,), max_iter=opt.epochs, learning_rate_init=opt.learning_rate, random_state=42)
-    clf.fit(train_X, train_y)
-    print(clf.score(train_X, train_y))
-    print(clf.score(dev_X, dev_y))
+    # clf = MLPsklearn(hidden_layer_sizes=(opt.hidden_size,), max_iter=opt.epochs, learning_rate_init=opt.learning_rate, random_state=42)
+    # clf.fit(train_X, train_y)
+    # print(clf.score(train_X, train_y))
+    # print(clf.score(dev_X, dev_y))
 
     # plot
     plot(epochs, train_accs, valid_accs)

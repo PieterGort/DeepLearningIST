@@ -4,15 +4,23 @@ from tensorflow.keras.layers import Flatten, Dense
 from tensorflow.keras.optimizers import SGD
 from tensorflow.keras.losses import SparseCategoricalCrossentropy
 import matplotlib.pyplot as plt
+import utils
 
-# Load data from .npy files
-train_images = np.load('octmnist/train_images.npy')
-train_labels = np.load('octmnist/train_labels.npy')
-test_images = np.load('octmnist/test_images.npy')
-test_labels = np.load('octmnist/test_labels.npy')
+# Load OCT data
+data = utils.load_oct_data()
 
-# Make sure that the images are in the shape (num_samples, 28, 28, 1)
-# If they are not, you will need to reshape them accordingly
+train_images, train_labels = data["train"]
+dev_images, dev_labels = data["dev"]
+test_images, test_labels = data["test"]
+
+# reshape the images to be 28x28
+train_images = train_images.reshape(train_images.shape[0], 28, 28, 1)
+dev_images = dev_images.reshape(dev_images.shape[0], 28, 28, 1)
+test_images = test_images.reshape(test_images.shape[0], 28, 28, 1)
+
+# print shapes
+print(train_images.shape)
+print(test_images.shape)
 
 # Normalize the images to the range [0, 1]
 train_images = train_images / 255.0

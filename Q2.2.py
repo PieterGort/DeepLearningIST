@@ -107,7 +107,7 @@ print(f'best learning rate: {best_batch} with validation accuracy: {best_accurac
     
 # Evaluate the model
 test_loss, test_accuracy = best_model.evaluate(test_dataset, batch_size=best_batch)
-print(f'Test accuracy with batch size {best_batch}: {best_accuracy}')
+print(f'Test accuracy with batch size {best_batch}: {test_accuracy}')
 
 
     

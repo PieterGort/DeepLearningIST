@@ -28,11 +28,6 @@ train_images = train_images / 255.0
 dev_images = dev_images / 255.0
 test_images = test_images / 255.0
 
-# Define hyperparameters
-epochs = 20
-learning_rates = [1, 0.1, 0.01, 0.001]
-hidden_size = 200
-batch_sizes = [16, 1024]
 
 # Define the neural network architecture
 class FeedforwardNetwork(tf.keras.Model):
@@ -49,9 +44,14 @@ class FeedforwardNetwork(tf.keras.Model):
         x = self.dense1(x)
         x = self.dense2(x)
         return self.output_layer(x)
-    
+
+# Define hyperparameters
+epochs = 20
+hidden_size = 200   
 learning_rates = [0.001, 0.01, 0.1, 1]
 batch_size = 16
+
+
 best_lr = 0
 best_accuracy = 0
 history_dict = {}
@@ -109,7 +109,7 @@ for lr in learning_rates:
 print(f'best learning rate: {best_lr} with validation accuracy: {best_accuracy}')
     
 # Evaluate the model
-test_loss, test_accuracy = best_model.evaluate(test_dataset, learning_rate = best_lr)
+test_loss, test_accuracy = best_model.evaluate(test_dataset)
 print(f'Test accuracy with learning rate {best_lr}: {test_accuracy}')
 
 

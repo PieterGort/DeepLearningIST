@@ -32,8 +32,7 @@ test_images = test_images / 255.0
 
 # Define hyperparameters
 epochs = 150
-hidden_size = 200   
-learning_rates = [0.001, 0.01, 0.1, 1]
+hidden_size = 200
 batch_size = 256
 
 # Convert the data and labels into TensorFlow datasets
@@ -86,40 +85,53 @@ class FeedforwardNetworkWithDropout(tf.keras.Model):
         return self.output_layer(x)
 
 # Define different models to test
-model = FeedforwardNetwork(hidden_size=hidden_size)
-# model = FeedforwardNetworkWithL2(hidden_size=hidden_size, l2_reg=0.0001)
-# model = FeedforwardNetworkWithDropout(hidden_size=hidden_size, dropout_rate=0.2)
+#model = FeedforwardNetwork(hidden_size=hidden_size)
+model1 = FeedforwardNetworkWithL2(hidden_size=hidden_size, l2_reg=0.0001)
+model2 = FeedforwardNetworkWithDropout(hidden_size=hidden_size, dropout_rate=0.2)
 
 # Compile the models
-model.compile(optimizer=SGD(learning_rate=0.1),
+model1.compile(optimizer=SGD(learning_rate=0.1),
             loss=SparseCategoricalCrossentropy(),
             metrics=['accuracy'])
 
+model2.compile(optimizer=SGD(learning_rate=0.1),
+            loss=SparseCategoricalCrossentropy(),
+            metrics=['accuracy'])
+
+
 # Train the model
-history = model.fit(train_dataset, epochs=epochs, batch_size=batch_size, validation_data=dev_dataset)
+history1 = model1.fit(train_dataset, epochs=epochs, batch_size=batch_size, validation_data=dev_dataset)
+history2 = model2.fit(train_dataset, epochs=epochs, batch_size=batch_size, validation_data=dev_dataset)
 
 # Evaluate the model
-test_loss, test_accuracy = model.evaluate(test_dataset, batch_size=batch_size)
-print(f'Test accuracy model 1 with batch size {batch_size} and epochs {epochs}: {test_accuracy}')
+test_loss1, test_accuracy1 = model1.evaluate(test_dataset, batch_size=batch_size)
+print(f'Test accuracy model 1 with batch size {batch_size} and epochs {epochs}: {test_accuracy1}')
+test_loss2, test_accuracy2 = model2.evaluate(test_dataset, batch_size=batch_size)
+print(f'Test accuracy model 2 with batch size {batch_size} and epochs {epochs}: {test_accuracy2}')
+
 
 plt.figure(figsize=(14, 5))
 # Plot training & validation accuracy
 plt.subplot(1, 2, 1)
-plt.plot(history.history['accuracy'])
-plt.plot(history.history['val_accuracy'])
+plt.plot(history1.history['accuracy'])
+plt.plot(history1.history['val_accuracy'])
+plt.plot(history2.history['accuracy'])
+plt.plot(history2.history['val_accuracy'])
 plt.title(f'Model accuracy')
 plt.ylabel('Accuracy')
 plt.xlabel('Epoch')
-plt.legend(['Train', 'Val'], loc='upper left')
+plt.legend(['Train1', 'Val1', 'Train2', 'Val2'], loc='upper left')
 
 # Plot training & validation loss
 plt.subplot(1, 2, 2)
-plt.plot(history.history['loss'])
-plt.plot(history.history['val_loss'])
+plt.plot(history1.history['loss'])
+plt.plot(history1.history['val_loss'])
+plt.plot(history2.history['loss'])
+plt.plot(history2.history['val_loss'])
 plt.title(f'Model loss')
 plt.ylabel('Loss')
 plt.xlabel('Epoch')
-plt.legend(['Train', 'Val'], loc='upper left')
+plt.legend(['Train1', 'Val1', 'Train2', 'Val2'], loc='upper left')
 plt.show()
 
 

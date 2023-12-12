@@ -11,3 +11,6 @@
 *.zip
 *.tar.gz
 *.ipynb
+
+# ignore folder HW1
+HW1/

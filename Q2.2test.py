@@ -8,8 +8,9 @@ import matplotlib.pyplot as plt
 import utils
 
 class FeedforwardNetwork:
-    def __init__(self, input_shape, num_classes, hidden_size=200, number_of_layers=2, dropout_rate=0.0, 
-                 activation_function='relu', learning_rate=0.1, l2_regularization=0.0):
+    def __init__(self, input_shape, num_classes, hidden_size=200, number_of_layers=2, dropout_rate=0.2, 
+                 activation_function='relu', learning_rate=0.1, l2_regularization=0):
+        super(FeedforwardNetwork, self).__init__()
         self.input_shape = input_shape
         self.num_classes = num_classes
         self.hidden_size = hidden_size

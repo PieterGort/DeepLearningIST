@@ -75,6 +75,7 @@ class FeedforwardNetworkWithDropout(tf.keras.Model):
         self.dense1 = Dense(hidden_size, activation='relu')
         self.dropout = Dropout(dropout_rate)
         self.dense2 = Dense(hidden_size, activation='relu')
+        self.dropout = Dropout(dropout_rate)
         self.output_layer = Dense(4, activation='softmax')
 
     def call(self, inputs):

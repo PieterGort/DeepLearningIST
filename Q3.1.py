@@ -12,10 +12,10 @@ class MLP(object):
         # ensure that the rules of the game are adhered to
         assert -D < A <= B < D, "A, B, D must satisfy -D < A <= B < D"
 
-        self.W1 = np.ones((K, D))
-        self.b1 = np.ones((K, 1))
+        self.W1 = np.array([[1, 1], [1, 1]])
+        self.b1 = np.array([[1], [1]])
 
-        self.W2 = np.ones((1, K))
+        self.W2 = np.array([[1, 1]])
         self.b2 = 1
     
     def sign(self, Z):
@@ -35,33 +35,42 @@ class MLP(object):
         return n_correct / n_possible
 
     def train_epoch(self, X, y, learning_rate=0.001):
+        losses = []
         for x_i, y_i in zip(X, y):
-            Z1 = self.W1.dot(x_i) + self.b1
-            h1 = self.ReLu(Z1)
-            Z2 = self.W2.dot(h1) + self.b2
-            h2 = self.softmax(Z2)
+            # Forward propagation
+            z1 = np.dot(x_i, self.W1.T) + self.b1
+            h1 = self.ReLu(z1)
+            z2 = np.dot(h1, self.W2.T) + self.b2
+            h2 = self.softmax_MLP(z2)
 
-            y_one_hot = np.eye(self.W2.shape[1])[y_i]
+            # Backward propagation
+            y_one_hot = np.zeros(self.W2.shape[0])
+            y_one_hot[y_i] = 1
+
+            loss = self.cross_entropy(h2, y_one_hot)
+            losses.append(loss)
+
             dZ2 = h2 - y_one_hot
-            dW2 = h1.T.dot(dZ2)
-            db2 = np.sum(dZ2, axis=0)
+            dW2 = np.outer(dZ2, h1)
+            db2 = dZ2
 
-            dh1 = self.W2.dot(dZ2.T)
-            dZ1 = (Z1 > 0) * dh1.T
-            dW1 = dZ1.T.dot(x_i)
-            db1 = np.sum(dZ1, axis=0)
+            dh1 = np.dot(dZ2, self.W2)
+            dZ1 = dh1 * self.relu_derivative(z1)
+            dW1 = np.outer(dZ1, x_i)
+            db1 = dZ1
 
+            # Update weights and biases
             self.W2 -= learning_rate * dW2
             self.b2 -= learning_rate * db2
             self.W1 -= learning_rate * dW1
             self.b1 -= learning_rate * db1
 
-            # Compute the cross-entropy loss
-            loss = self.cross_entropy(h2, y_one_hot, epsilon=1e-12)
-            return loss
+        return np.mean(losses)
         
-    def loss():
-        pass
+    def cross_entropy(self, prediction, target, epsilon=1e-12):
+        prediction = np.clip(prediction, epsilon, 1. - epsilon)
+        celoss = -np.sum(target*np.log(prediction+1e-9))
+        return celoss
 
     def function_f(self, A, B, x):
         if np.sum(x) in range(A, B):
@@ -71,20 +80,45 @@ class MLP(object):
 
 def main():
     A = -1
-    B = 3
-    D = 5
+    B = 1
+    D = 2
     K = 2
 
     mlp = MLP(A, B, D, K)
     # let the input vector be any random vector of size Dx1 with entries -1 or 1
-    x = np.random.choice([-1, 1], size=(D, 1))
+    # make the vector [-1, 1]^T
+    x1 = np.array([[1], [1]])
+    x2 = np.array([[1], [-1]])
+    x3 = np.array([[-1], [1]])
+    x4 = np.array([[-1], [-1]])
 
-    output = mlp.forward(x)
+
+    output1 = mlp.forward(x1)
+    output2 = mlp.forward(x2)
+    output3 = mlp.forward(x3)
+    output4 = mlp.forward(x4)
     print(" ")
-    print("The output of the MLP is: ", output)
+    print("Output for x1: ", output1)
+    print("Output for x2: ", output2)
+    print("Output for x3: ", output3)
+    print("Output for x4: ", output4)
+    print(" ")
+    print("Actual output for x1: ", mlp.function_f(A, B, x1))
+    print("Actual output for x2: ", mlp.function_f(A, B, x2))
+    print("Actual output for x3: ", mlp.function_f(A, B, x3))
+    print("Actual output for x4: ", mlp.function_f(A, B, x4))
 
-    print("The output of the original function would be: ", mlp.function_f(A, B, x))
+    print("Weights W1: ", mlp.W1)
+    print("")
+    print("Bias b1: ", mlp.b1)
+    print("")
+    print("Weights W2: ", mlp.W2)
+    print("")
+    print("Bias b2: ", mlp.b2)
 
     
 if __name__ == '__main__':
     main()
+
+
+

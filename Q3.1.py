@@ -7,23 +7,21 @@ n_classes = 1
 
 
 class MLP(object):
-    # Q3.2b. This MLP skeleton code allows the MLP to be used in place of the
-    # linear models with no changes to the training loop or evaluation code
-    # in main().
-    def __init__(self, n_classes, n_features, hidden_size):
-        # Initialize an MLP with a single hidden layer.
-        # Initialize the weights of the hidden layer with a random normal and the bias
-        
-        self.W1 = np.random.normal(0.1, np.sqrt(0.01), (hidden_size, n_features))
-        self.b1 = np.zeros(hidden_size)
+    def __init__(self, A, B, D, K):
 
-        self.W2 = np.random.normal(0.1, np.sqrt(0.01), (n_classes, hidden_size))
-        self.b2 = np.zeros(n_classes)        
+        # ensure that the rules of the game are adhered to
+        assert -D < A <= B < D, "A, B, D must satisfy -D < A <= B < D"
+
+        self.W1 = np.ones((K, D))
+        self.b1 = np.ones((K, 1))
+
+        self.W2 = np.ones((1, K))
+        self.b2 = 1
     
     def sign(self, Z):
         return np.where(Z >= 0, 1, -1)
     
-    def predict(self, X):
+    def forward(self, X):
         Z1 = self.W1.dot(X) + self.b1
         h1 = self.sign(Z1)
         Z2 = self.W2.dot(h1) + self.b2
@@ -61,6 +59,32 @@ class MLP(object):
             # Compute the cross-entropy loss
             loss = self.cross_entropy(h2, y_one_hot, epsilon=1e-12)
             return loss
-    
+        
     def loss():
         pass
+
+    def function_f(self, A, B, x):
+        if np.sum(x) in range(A, B):
+            return 1
+        else:
+            return -1
+
+def main():
+    A = -1
+    B = 3
+    D = 5
+    K = 2
+
+    mlp = MLP(A, B, D, K)
+    # let the input vector be any random vector of size Dx1 with entries -1 or 1
+    x = np.random.choice([-1, 1], size=(D, 1))
+
+    output = mlp.forward(x)
+    print(" ")
+    print("The output of the MLP is: ", output)
+
+    print("The output of the original function would be: ", mlp.function_f(A, B, x))
+
+    
+if __name__ == '__main__':
+    main()

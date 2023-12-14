@@ -1,0 +1,4 @@
+Q22c
+default test acc = 0.5217
+l2 reg test acc = 0.5860
+dropout test acc = 0.5331

@@ -39,90 +39,30 @@ class LinearModel(object):
 
 
 class Perceptron(LinearModel):
-    def __init__(self, n_classes, n_features, **kwargs):
-        super(Perceptron, self).__init__(n_classes, n_features)
-        self.learning_rate = kwargs.get('learning_rate', 1)
-        self.epochs= kwargs.get('epochs', 20)
-        self.W = np.zeros((n_classes, n_features + 1))
-
-    def train_epoch(self, X, y, learning_rate):
-        n_samples = np.shape(X)[0]
-        X = np.concatenate((np.ones((n_samples, 1)), X), axis=1)
-        mistakes = 0
-        for x_i, y_i in zip(X, y):
-            y_hat = np.argmax(self.W.dot(x_i))
-            if y_hat != y_i:
-                mistakes += 1
-                self.W[y_i, :] += learning_rate * x_i
-                self.W[y_hat, :] -= learning_rate * x_i
-        return self.W
-    
-    def predict(self, X):
-        n_samples = np.shape(X)[0]
-        X = np.concatenate((np.ones((n_samples, 1)), X), axis=1)
-        predicted_labels = []
-        for x_i in X:
-            y_hat = np.argmax(self.W.dot(x_i))
-            predicted_labels.append(y_hat)
-        predicted_labels = np.array(predicted_labels)
-        return predicted_labels
-
-    def evaluate(self, X, y):
-        accuracy = np.mean(self.predict(X) == y)
-        return accuracy
+    def update_weight(self, x_i, y_i, **kwargs):
+        
+        pred_y = self.predict(x_i)
+        if pred_y != y_i:
+            self.W[y_i] += x_i
+            self.W[pred_y] -= x_i
 
 class LogisticRegression(LinearModel):
-    def __init__(self, n_classes, n_features):
-        super(LogisticRegression, self).__init__(n_classes, n_features)
-        self.W = self.init_weights(n_features, n_classes)
+        def update_weight(self, x_i, y_i, learning_rate=0.001):
 
-    def init_weights(self, n_features, n_classes):
-        t = np.sqrt(6 / (n_features + n_classes))
-        weights = np.random.uniform(-t, t, (n_classes, n_features + 1))
-        return weights
-     
-    def train_epoch(self, X, y, learning_rate):
-        n, p = np.shape(X)
-        
-        # # add bias
-        X = np.concatenate((np.ones((n, 1)), X), axis=1)
+            y_hat = np.dot(self.W, x_i)
+            y_hat -=np.max(y_hat)
+            y_probabilities = np.exp(y_hat / np.sum(np.exp(y_hat)))
 
-        for x_i, y_i in zip(X, y):
-
-            # probability scores according to the model (n_classes x 1)
-            y_label_scores = np.expand_dims((self.W).dot(x_i), axis=1)
-
-            # one-hot encoding of the true label (n_labels x 1)
-            y_one_hot = np.zeros((np.size(self.W, 0), 1))
+            y_one_hot = np.zeros(self.W.shape[0])
             y_one_hot[y_i] = 1
 
-            # softmax function
-            label_probabilities = np.exp(y_label_scores) / np.sum(np.exp(y_label_scores))
-
             # SGD update
-            self.W = self.W + learning_rate * (y_one_hot - label_probabilities).dot(np.expand_dims(x_i, axis = 1).T)
-        return self.W
-    
-    def predict(self, X):
-        n, p = np.shape(X)
-        X = np.concatenate((np.ones((n, 1)), X), axis=1)
-        y_hat = np.argmax(X.dot(self.W.T), axis=1)
-        return y_hat
-
-    def evaluate(self, X, y):
-        predictions = self.predict(X)
-        accuracy = np.mean(predictions == y)
-        return accuracy
-    
+            gradient = np.outer(y_probabilities - y_one_hot, x_i)
+            self.W -= learning_rate * gradient
 
 class MLP(object):
-    # Q3.2b. This MLP skeleton code allows the MLP to be used in place of the
-    # linear models with no changes to the training loop or evaluation code
-    # in main().
     def __init__(self, n_classes, n_features, hidden_size):
-        # Initialize an MLP with a single hidden layer.
         # Initialize the weights of the hidden layer with a random normal and the bias
-        
         # 200 x 784
         self.W1 = np.random.normal(0.01, np.sqrt(0.01), (hidden_size, n_features))
         # 200 x 1
@@ -242,9 +182,9 @@ def main():
     n_classes = np.unique(train_y).size
     n_feats = train_X.shape[1]
 
+    
     # print("train_X shape: {}".format(train_X.shape))
     # print("train_y shape: {}".format(train_y.shape))
-
     # print(f'There are {train_X.shape[0]} observations with {n_feats} features classified into {n_classes} classes.')
 
     # initialize the model

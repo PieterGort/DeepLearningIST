@@ -8,6 +8,7 @@ import torch
 from torch.utils.data import DataLoader
 import torch.nn as nn
 from matplotlib import pyplot as plt
+import time
 
 import utils
 
@@ -66,19 +67,44 @@ class FeedforwardNetwork(nn.Module):
         attributes that each FeedforwardNetwork instance has. Note that nn
         includes modules for several activation functions and dropout as well.
         """
-        super().__init__()
-        # Implement me!
-        raise NotImplementedError
+        super(FeedforwardNetwork, self).__init__()
 
-    def forward(self, x, **kwargs):
-        """
-        x (batch_size x n_features): a batch of training examples
+        # Create hidden layers
+        self.hidden_layers = nn.ModuleList()
+        for i in range(layers):
+            # Determine the input size to the current layer
+            if i == 0:
+                input_size = n_features
+            else:
+                input_size = hidden_size
 
-        This method needs to perform all the computation needed to compute
-        the output logits from x. This will include using various hidden
-        layers, pointwise nonlinear functions, and dropout.
+            # Add the linear layer
+            self.hidden_layers.append(nn.Linear(input_size, hidden_size))
+
+            # Add the activation function
+            if activation_type == 'relu':
+                self.hidden_layers.append(nn.ReLU())
+            elif activation_type == 'tanh':
+                self.hidden_layers.append(nn.Tanh())
+            # You can add more activation types as needed
+
+            # Add dropout after each hidden layer
+            self.hidden_layers.append(nn.Dropout(dropout))
+
+        # Output layer
+        self.output = nn.Linear(hidden_size, n_classes)
+
+    def forward(self, x):
         """
-        raise NotImplementedError
+        Forward pass through the network.
+        """
+        # Pass through each hidden layer
+        for layer in self.hidden_layers:
+            x = layer(x)
+
+        # Pass through output layer
+        x = self.output(x)
+        return x
 
 
 def train_batch(X, y, model, optimizer, criterion, **kwargs):
@@ -161,13 +187,13 @@ def main():
     parser.add_argument('-epochs', default=20, type=int,
                         help="""Number of epochs to train for. You should not
                         need to change this value for your plots.""")
-    parser.add_argument('-batch_size', default=16, type=int,
+    parser.add_argument('-batch_size', default=16, type=int, 
                         help="Size of training batch.")
-    parser.add_argument('-learning_rate', type=float, default=0.01)
+    parser.add_argument('-learning_rate', type=float, default=0.1)
     parser.add_argument('-l2_decay', type=float, default=0)
-    parser.add_argument('-hidden_size', type=int, default=100)
-    parser.add_argument('-layers', type=int, default=1)
-    parser.add_argument('-dropout', type=float, default=0.3)
+    parser.add_argument('-hidden_size', type=int, default=200)
+    parser.add_argument('-layers', type=int, default=2)
+    parser.add_argument('-dropout', type=float, default=0.0)
     parser.add_argument('-activation',
                         choices=['tanh', 'relu'], default='relu')
     parser.add_argument('-optimizer',
@@ -212,6 +238,8 @@ def main():
     # get a loss criterion
     criterion = nn.CrossEntropyLoss()
 
+    start_time = time.time()
+
     # training loop
     epochs = torch.arange(1, opt.epochs + 1)
     train_losses = []
@@ -237,6 +265,11 @@ def main():
 
     _, test_acc = evaluate(model, test_X, test_y, criterion)
     print('Final Test acc: %.4f' % (test_acc))
+    print("Highest validation accuracy: %.4f" % max(valid_accs))
+
+    end_time = time.time()
+    total_time = end_time - start_time
+
     # plot
     if opt.model == "logistic_regression":
         config = (
@@ -265,7 +298,8 @@ def main():
     accuracy = { "Valid Accuracy": valid_accs }
     plot(epochs, accuracy, name=f'{opt.model}-validation-accuracy-{config}', ylim=(0., 1.))
 
-
+    print(f"Total time: {total_time:.2f}s")
+    print(f"Test accuracy: {test_acc:.4f}")
 
 if __name__ == '__main__':
     main()

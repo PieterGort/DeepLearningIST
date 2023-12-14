@@ -2,6 +2,7 @@ import numpy as np
 import tensorflow as tf
 from keras.layers import Flatten, Dense
 from keras.optimizers import SGD
+# import logisticregression from keras
 from keras.losses import SparseCategoricalCrossentropy
 import matplotlib.pyplot as plt
 import utils
@@ -33,12 +34,14 @@ train_dataset = tf.data.Dataset.from_tensor_slices((train_images, train_labels))
 dev_dataset = tf.data.Dataset.from_tensor_slices((dev_images, dev_labels)).batch(16)
 test_dataset = tf.data.Dataset.from_tensor_slices((test_images, test_labels)).batch(16)
 
+num_classes = 4
+
 class LogisticRegression(tf.keras.Model):
     def __init__(self):
         super(LogisticRegression, self).__init__()
         self.flatten = Flatten(input_shape=(28, 28, 1))
         # Output layer for 4 classes with softmax activation
-        self.dense_softmax = Dense(4, activation='softmax')
+        self.dense_softmax = Dense(num_classes, activation='softmax')
 
     def call(self, inputs):
         x = self.flatten(inputs)

@@ -26,9 +26,10 @@ class LogisticRegression(nn.Module):
         pytorch to make weights and biases, have a look at
         https://pytorch.org/docs/stable/nn.html
         """
-        super().__init__()
-        # In a pytorch module, the declarations of layers needs to come after
-        # the super __init__ line, otherwise the magic doesn't work.
+        super(LogisticRegression, self).__init__()
+        # Define the weight matrix and bias vector.
+        self.linear = nn.Linear(n_features, n_classes)
+
 
     def forward(self, x, **kwargs):
         """
@@ -44,7 +45,8 @@ class LogisticRegression(nn.Module):
         forward pass -- this is enough for it to figure out how to do the
         backward pass.
         """
-        raise NotImplementedError
+        y = self.linear(x)
+        return y
 
 
 # Q2.2
@@ -97,7 +99,19 @@ def train_batch(X, y, model, optimizer, criterion, **kwargs):
     This function should return the loss (tip: call loss.item()) to get the
     loss as a numerical value that is not part of the computation graph.
     """
-    raise NotImplementedError
+    # Set model to training mode
+    model.train()
+    # Zero the gradients before running the backward pass.
+    optimizer.zero_grad()
+    # Forward pass: Compute predicted y by passing X to the model
+    y_pred = model(X)
+    # Compute loss
+    loss = criterion(y_pred, y)
+    # Backward pass: Compute gradient of the loss with respect to model parameters
+    loss.backward()
+    # Calling the step function on an Optimizer makes an update to its parameters
+    optimizer.step()
+    return loss.item()
 
 
 def predict(model, X):
@@ -147,7 +161,7 @@ def main():
     parser.add_argument('-epochs', default=20, type=int,
                         help="""Number of epochs to train for. You should not
                         need to change this value for your plots.""")
-    parser.add_argument('-batch_size', default=1, type=int,
+    parser.add_argument('-batch_size', default=16, type=int,
                         help="Size of training batch.")
     parser.add_argument('-learning_rate', type=float, default=0.01)
     parser.add_argument('-l2_decay', type=float, default=0)
@@ -250,6 +264,7 @@ def main():
     plot(epochs, losses, name=f'{opt.model}-training-loss-{config}', ylim=ylim)
     accuracy = { "Valid Accuracy": valid_accs }
     plot(epochs, accuracy, name=f'{opt.model}-validation-accuracy-{config}', ylim=(0., 1.))
+
 
 
 if __name__ == '__main__':

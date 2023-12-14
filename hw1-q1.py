@@ -6,7 +6,6 @@ import argparse
 import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.linear_model import LogisticRegression as LR
-from sklearn.neural_network import MLPClassifier as MLPsklearn
 import utils
 
 
@@ -71,6 +70,7 @@ class Perceptron(LinearModel):
         accuracy = np.mean(self.predict(X) == y)
         return accuracy
 
+
 class LogisticRegression(LinearModel):
     def __init__(self, n_classes, n_features):
         super(LogisticRegression, self).__init__(n_classes, n_features)
@@ -123,82 +123,77 @@ class MLP(object):
         # Initialize an MLP with a single hidden layer.
         # Initialize the weights of the hidden layer with a random normal and the bias
         
-        # 200 x 784
-        self.W1 = np.random.normal(0.01, np.sqrt(0.01), (hidden_size, n_features))
-        # 200 x 1
+        self.W1 = np.random.normal(0.1, np.sqrt(0.01), (hidden_size, n_features))
         self.b1 = np.zeros(hidden_size)
-        # 4 x 200
-        self.W2 = np.random.normal(0.01, np.sqrt(0.01), (n_classes, hidden_size))
-        # 4 x 1
+
+        self.W2 = np.random.normal(0.1, np.sqrt(0.01), (n_classes, hidden_size))
         self.b2 = np.zeros(n_classes)        
     
     def ReLu(self, Z):
-        return np.maximum(Z, 0)
-
-    def relu_derivative(self, Z):
-        return (Z > 0).astype(float)
+        return np.maximum(0, Z)
     
-    def softmax_MLP(self, x):
-        """Compute softmax values for each sets of scores in x."""
-        e_x = np.exp(x - np.max(x))
-        return e_x / e_x.sum()
-    
-    def cross_entropy(self, prediction, target, epsilon=1e-12):
-        prediction = np.clip(prediction, epsilon, 1. - epsilon)
-        ce = -np.sum(target*np.log(prediction+1e-9))
-        return ce
+    def softmax(self, Z):
+        exp_Z = np.exp(Z - np.max(Z, keepdims=True))
+        return exp_Z / np.sum(exp_Z, keepdims=True)
     
     def predict(self, X):
-        Z1 = np.dot(X, self.W1.T) + self.b1
+        # Compute the forward pass of the network. At prediction time, there is
+        # no need to save the values of hidden nodes, whereas this is required
+        # at training time.
+
+        Z1 = X.dot(self.W1.T) + self.b1
         h1 = self.ReLu(Z1)
-        Z2 = np.dot(h1, self.W2.T) + self.b2
-        # class probabilities
-        h2 = self.softmax_MLP(Z2)
-        y_hat = np.argmax(h2, axis=1)
-        return y_hat
+        Z2 = h1.dot(self.W2) + self.b2
+        h2 = self.softmax(Z2)
+
+        return np.argmax()
     
     def evaluate(self, X, y):
         """
         X (n_examples x n_features)
         y (n_examples): gold labels
         """
+        # Identical to LinearModel.evaluate()
         y_hat = self.predict(X)
-        accuracy = np.mean(y_hat == y)
-        return accuracy
-    
+        n_correct = (y == y_hat).sum()
+        n_possible = y.shape[0]
+        return n_correct / n_possible
 
     def train_epoch(self, X, y, learning_rate=0.001):
-        losses = []
+        """
+        Dont forget to return the loss of the epoch.
+        """
         for x_i, y_i in zip(X, y):
-            # Forward propagation
-            z1 = np.dot(x_i, self.W1.T) + self.b1
-            h1 = self.ReLu(z1)
-            z2 = np.dot(h1, self.W2.T) + self.b2
-            h2 = self.softmax_MLP(z2)
+            Z1 = self.W1.dot(x_i) + self.b1
+            h1 = self.ReLu(Z1)
+            Z2 = self.W2.dot(h1) + self.b2
+            h2 = self.softmax(Z2)
 
-            # Backward propagation
-            y_one_hot = np.zeros(self.W2.shape[0])
-            y_one_hot[y_i] = 1
-
-            loss = self.cross_entropy(h2, y_one_hot)
-            losses.append(loss)
-
+            y_one_hot = np.eye(self.W2.shape[1])[y_i]
             dZ2 = h2 - y_one_hot
-            dW2 = np.outer(dZ2, h1)
-            db2 = dZ2
+            dW2 = h1.T.dot(dZ2)
+            db2 = np.sum(dZ2, axis=0)
 
-            dh1 = np.dot(dZ2, self.W2)
-            dZ1 = dh1 * self.relu_derivative(z1)
-            dW1 = np.outer(dZ1, x_i)
-            db1 = dZ1
+            dh1 = self.W2.dot(dZ2.T)
+            dZ1 = (Z1 > 0) * dh1.T
+            dW1 = dZ1.T.dot(x_i)
+            db1 = np.sum(dZ1, axis=0)
 
-            # Update weights and biases
             self.W2 -= learning_rate * dW2
             self.b2 -= learning_rate * db2
             self.W1 -= learning_rate * dW1
             self.b1 -= learning_rate * db1
 
-        return np.mean(losses)
+            # Compute the cross-entropy loss
+            loss = self.cross_entropy(h2, y_one_hot, epsilon=1e-12)
+            return loss
+    
+    def cross_entropy(self, predictions, targets, epsilon=1e-12):
+        predictions = np.clip(predictions, epsilon, 1. - epsilon)
+        N = predictions.shape[0]
+        ce_loss = -np.sum(targets*np.log(predictions))/N
+        return ce_loss
+
 
 def plot(epochs, train_accs, val_accs):
     plt.xlabel('Epoch')
@@ -242,10 +237,10 @@ def main():
     n_classes = np.unique(train_y).size
     n_feats = train_X.shape[1]
 
-    # print("train_X shape: {}".format(train_X.shape))
-    # print("train_y shape: {}".format(train_y.shape))
+    print("train_X shape: {}".format(train_X.shape))
+    print("train_y shape: {}".format(train_y.shape))
 
-    # print(f'There are {train_X.shape[0]} observations with {n_feats} features classified into {n_classes} classes.')
+    print(f'There are {train_X.shape[0]} observations with {n_feats} features classified into {n_classes} classes.')
 
     # initialize the model
     if opt.model == 'perceptron':
@@ -293,16 +288,10 @@ def main():
         ))
     
     # Compare the results from the written code with sklearn package for LogisticRegression
-    # clf = LR(fit_intercept=False, penalty='none')
-    # clf.fit(train_X, train_y)
-    # print(clf.score(train_X, train_y))
-    # print(clf.score(dev_X, dev_y))
-
-    # compare MLP results with sklearn MLP package
-    # clf = MLPsklearn(hidden_layer_sizes=(opt.hidden_size,), max_iter=opt.epochs, learning_rate_init=opt.learning_rate, random_state=42)
-    # clf.fit(train_X, train_y)
-    # print(clf.score(train_X, train_y))-
-    # print(clf.score(dev_X, dev_y))
+    clf = LR(fit_intercept=False, penalty='none')
+    clf.fit(train_X, train_y)
+    print(clf.score(train_X, train_y))
+    print(clf.score(dev_X, dev_y))
 
     # plot
     plot(epochs, train_accs, valid_accs)

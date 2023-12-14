@@ -264,7 +264,6 @@ def main():
         valid_accs.append(val_acc)
 
     _, test_acc = evaluate(model, test_X, test_y, criterion)
-    print('Final Test acc: %.4f' % (test_acc))
     print("Highest validation accuracy: %.4f" % max(valid_accs))
 
     end_time = time.time()

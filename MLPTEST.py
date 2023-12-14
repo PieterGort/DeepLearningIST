@@ -62,77 +62,69 @@ class LogisticRegression(LinearModel):
 
 class MLP(object):
     def __init__(self, n_classes, n_features, hidden_size):
-        # Initialize the weights of the hidden layer with a random normal and the bias
-        # 200 x 784
-        self.W1 = np.random.normal(0.01, np.sqrt(0.01), (hidden_size, n_features))
-        # 200 x 1
-        self.b1 = np.zeros(hidden_size)
-        # 4 x 200
-        self.W2 = np.random.normal(0.01, np.sqrt(0.01), (n_classes, hidden_size))
-        # 4 x 1
-        self.b2 = np.zeros(n_classes)        
+        # Xavier/Glorot initialization for weights
+        self.W1 = np.random.randn(hidden_size, n_features) * np.sqrt(2. / n_features)
+        self.b1 = np.zeros((hidden_size, 1))
+        self.W2 = np.random.randn(n_classes, hidden_size) * np.sqrt(2. / hidden_size)
+        self.b2 = np.zeros((n_classes, 1))
+        
+    def relu(self, Z):
+        return np.maximum(0, Z)
     
-    def ReLu(self, Z):
-        return np.maximum(Z, 0)
-
     def relu_derivative(self, Z):
-        return (Z > 0).astype(float)
+        return Z > 0
     
-    def softmax_MLP(self, x):
-        """Compute softmax values for each sets of scores in x."""
-        e_x = np.exp(x - np.max(x))
-        return e_x / e_x.sum()
+    def softmax(self, Z):
+        e_Z = np.exp(Z - np.max(Z, axis=0, keepdims=True))
+        return e_Z / np.sum(e_Z, axis=0, keepdims=True)
     
-    def cross_entropy(self, prediction, target, epsilon=1e-12):
-        prediction = np.clip(prediction, epsilon, 1. - epsilon)
-        ce = -np.sum(target*np.log(prediction+1e-9))
-        return ce
+    def cross_entropy(self, Y_hat, Y):
+        m = Y.shape[1]
+        Y_hat = Y_hat.clip(min=1e-10, max=1 - 1e-10)  # Clip values to avoid log(0)
+        return -np.sum(Y * np.log(Y_hat)) / m
     
     def predict(self, X):
-        Z1 = np.dot(X, self.W1.T) + self.b1
-        h1 = self.ReLu(Z1)
-        Z2 = np.dot(h1, self.W2.T) + self.b2
-        # class probabilities
-        h2 = self.softmax_MLP(Z2)
-        y_hat = np.argmax(h2, axis=1)
-        return y_hat
+        A1 = self.relu(np.dot(self.W1, X.T) + self.b1)
+        A2 = self.softmax(np.dot(self.W2, A1) + self.b2)
+        return np.argmax(A2, axis=0)
     
     def evaluate(self, X, y):
-        """
-        X (n_examples x n_features)
-        y (n_examples): gold labels
-        """
         y_hat = self.predict(X)
-        accuracy = np.mean(y_hat == y)
-        return accuracy
+        return np.mean(y_hat == y)
     
-
     def train_epoch(self, X, y, learning_rate=0.001):
         losses = []
-        for x_i, y_i in zip(X, y):
-            # Forward propagation
-            z1 = np.dot(x_i, self.W1.T) + self.b1
-            h1 = self.ReLu(z1)
-            z2 = np.dot(h1, self.W2.T) + self.b2
-            h2 = self.softmax_MLP(z2)
+        m = X.shape[0]
+        
+        for i in range(m):
+            x_i = X[i].reshape(-1, 1)  # Reshape x_i to (n_features, 1)
+            y_i = y[i]
+            
+            # Forward pass
+            Z1 = np.dot(self.W1, x_i) + self.b1
+            A1 = self.relu(Z1)
+            Z2 = np.dot(self.W2, A1) + self.b2
+            A2 = self.softmax(Z2)
 
-            # Backward propagation
-            y_one_hot = np.zeros(self.W2.shape[0])
-            y_one_hot[y_i] = 1
+            # Convert label to one-hot vector
+            y_one_hot = np.zeros((self.W2.shape[0], 1))
+            y_one_hot[y_i, 0] = 1
 
-            loss = self.cross_entropy(h2, y_one_hot)
+            # Loss calculation
+            loss = self.cross_entropy(A2, y_one_hot)
             losses.append(loss)
 
-            dZ2 = h2 - y_one_hot
-            dW2 = np.outer(dZ2, h1)
+            # Backward pass
+            dZ2 = A2 - y_one_hot
+            dW2 = dZ2.dot(A1.T)
             db2 = dZ2
 
-            dh1 = np.dot(dZ2, self.W2)
-            dZ1 = dh1 * self.relu_derivative(z1)
-            dW1 = np.outer(dZ1, x_i)
+            dA1 = self.W2.T.dot(dZ2)
+            dZ1 = dA1 * self.relu_derivative(Z1)
+            dW1 = dZ1.dot(x_i.T)
             db1 = dZ1
 
-            # Update weights and biases
+            # Update parameters
             self.W2 -= learning_rate * dW2
             self.b2 -= learning_rate * db2
             self.W1 -= learning_rate * dW1

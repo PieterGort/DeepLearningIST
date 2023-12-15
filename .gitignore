@@ -11,3 +11,7 @@
 *.zip
 *.tar.gz
 *.ipynb
+
+# ignore the skeleton_code folder
+skeleton_code/
+```"*.pyc" 

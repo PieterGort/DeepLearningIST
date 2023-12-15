@@ -241,7 +241,7 @@ def main():
     # clf = MLPsklearn(hidden_layer_sizes=(opt.hidden_size,), max_iter=opt.epochs, learning_rate_init=opt.learning_rate, random_state=42)
     # clf.fit(train_X, train_y)
     # print("The final test accuracy for the MLP from the scikit-learn package is:", clf.score(test_X, test_y))
-a
+    
     # plot
     plot(epochs, train_accs, valid_accs)
     if opt.model == 'mlp':

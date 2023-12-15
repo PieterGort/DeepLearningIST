@@ -12,11 +12,11 @@ class MLP(object):
         # ensure that the rules of the game are adhered to
         assert -D < A <= B < D, "A, B, D must satisfy -D < A <= B < D"
 
-        self.W1 = np.array([[1, 1], [1, 1]])
-        self.b1 = np.array([[1], [1]])
+        self.W1 = np.array([[-2, -2], [-2, -2]])
+        self.b1 = np.array([[-2], [0]])
 
-        self.W2 = np.array([[1, 1]])
-        self.b2 = 1
+        self.W2 = np.array([[-2, 1]])
+        self.b2 = -2
     
     def sign(self, Z):
         return np.where(Z >= 0, 1, -1)
@@ -28,50 +28,6 @@ class MLP(object):
         h2 = self.sign(Z2)
         return h2
     
-    def evaluate(self, X, y):
-        y_hat = self.predict(X)
-        n_correct = (y == y_hat).sum()
-        n_possible = y.shape[0]
-        return n_correct / n_possible
-
-    def train_epoch(self, X, y, learning_rate=0.001):
-        losses = []
-        for x_i, y_i in zip(X, y):
-            # Forward propagation
-            z1 = np.dot(x_i, self.W1.T) + self.b1
-            h1 = self.ReLu(z1)
-            z2 = np.dot(h1, self.W2.T) + self.b2
-            h2 = self.softmax_MLP(z2)
-
-            # Backward propagation
-            y_one_hot = np.zeros(self.W2.shape[0])
-            y_one_hot[y_i] = 1
-
-            loss = self.cross_entropy(h2, y_one_hot)
-            losses.append(loss)
-
-            dZ2 = h2 - y_one_hot
-            dW2 = np.outer(dZ2, h1)
-            db2 = dZ2
-
-            dh1 = np.dot(dZ2, self.W2)
-            dZ1 = dh1 * self.relu_derivative(z1)
-            dW1 = np.outer(dZ1, x_i)
-            db1 = dZ1
-
-            # Update weights and biases
-            self.W2 -= learning_rate * dW2
-            self.b2 -= learning_rate * db2
-            self.W1 -= learning_rate * dW1
-            self.b1 -= learning_rate * db1
-
-        return np.mean(losses)
-        
-    def cross_entropy(self, prediction, target, epsilon=1e-12):
-        prediction = np.clip(prediction, epsilon, 1. - epsilon)
-        celoss = -np.sum(target*np.log(prediction+1e-9))
-        return celoss
-
     def function_f(self, A, B, x):
         if np.sum(x) in range(A, B):
             return 1
@@ -79,7 +35,7 @@ class MLP(object):
             return -1
 
 def main():
-    A = -1
+    A = 0
     B = 1
     D = 2
     K = 2
@@ -91,7 +47,6 @@ def main():
     x2 = np.array([[1], [-1]])
     x3 = np.array([[-1], [1]])
     x4 = np.array([[-1], [-1]])
-
 
     output1 = mlp.forward(x1)
     output2 = mlp.forward(x2)

@@ -40,23 +40,28 @@ class LinearModel(object):
 
 class Perceptron(LinearModel):
     def update_weight(self, x_i, y_i, **kwargs):
-        
+        # compute the prediction for this instance
         pred_y = self.predict(x_i)
+        # update the weights if the prediction is wrong
+        # for multi-class classification, we update the weights for all incorrect classes
         if pred_y != y_i:
             self.W[y_i] += x_i
             self.W[pred_y] -= x_i
 
 class LogisticRegression(LinearModel):
         def update_weight(self, x_i, y_i, learning_rate=0.001):
-
+            # compute the prediction for this instance
             y_hat = np.dot(self.W, x_i)
             y_hat -=np.max(y_hat)
+
+            # compute the softmax probabilities
             y_probabilities = np.exp(y_hat / np.sum(np.exp(y_hat)))
 
+            # one-hot encoding for the gold label
             y_one_hot = np.zeros(self.W.shape[0])
             y_one_hot[y_i] = 1
 
-            # SGD update
+            # gradient calculation and SGD update
             gradient = np.outer(y_probabilities - y_one_hot, x_i)
             self.W -= learning_rate * gradient
 
@@ -72,17 +77,20 @@ class MLP(object):
         # 4 x 1
         self.b2 = np.zeros(n_classes)        
     
+    # Specify the activation function and its derivative
     def ReLu(self, Z):
         return np.maximum(Z, 0)
 
     def relu_derivative(self, Z):
         return (Z > 0).astype(float)
     
+    # softmax activation for the output layer (multi-class classification)
     def softmax_MLP(self, x):
         """Compute softmax values for each sets of scores in x."""
         e_x = np.exp(x - np.max(x))
         return e_x / e_x.sum()
-    
+
+    # multinomial logistic loss or cross-entropy loss
     def cross_entropy(self, prediction, target, epsilon=1e-12):
         prediction = np.clip(prediction, epsilon, 1. - epsilon)
         ce = -np.sum(target*np.log(prediction+1e-9))
@@ -108,7 +116,9 @@ class MLP(object):
     
 
     def train_epoch(self, X, y, learning_rate=0.001):
+        # initialize empty list to store the loss for each epoch
         losses = []
+        #iterate over each
         for x_i, y_i in zip(X, y):
             # Forward propagation
             z1 = np.dot(x_i, self.W1.T) + self.b1
@@ -117,13 +127,17 @@ class MLP(object):
             h2 = self.softmax_MLP(z2)
 
             # Backward propagation
+
+            # one-hot encoding for the gold label
             y_one_hot = np.zeros(self.W2.shape[0])
             y_one_hot[y_i] = 1
 
+            # calculate the loss and append it to the empty list
             loss = self.cross_entropy(h2, y_one_hot)
             losses.append(loss)
 
-            dZ2 = h2 - y_one_hot
+            # calculate the gradients (dZ2 stands for dL/dZ2, dW2 for dL/dW2, etc.)
+            dZ2 = h2 - y_one_hot #
             dW2 = np.outer(dZ2, h1)
             db2 = dZ2
 

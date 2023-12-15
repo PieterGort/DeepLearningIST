@@ -286,12 +286,6 @@ def main():
     print('Final test acc: {:.4f}'.format(
         model.evaluate(test_X, test_y)
         ))
-    
-    # Compare the results from the written code with sklearn package for LogisticRegression
-    clf = LR(fit_intercept=False, penalty='none')
-    clf.fit(train_X, train_y)
-    print(clf.score(train_X, train_y))
-    print(clf.score(dev_X, dev_y))
 
     # plot
     plot(epochs, train_accs, valid_accs)

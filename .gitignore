@@ -12,13 +12,13 @@
 *.tar.gz
 *.ipynb
 *.pyc
+findweightsbiases.py
 
 # ignore the skeleton_code folder
 skeleton_code/
 
 # ignore python cache
 __pycache__/
-
 
 
 # ignore folder HW1

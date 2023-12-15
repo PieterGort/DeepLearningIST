@@ -11,7 +11,11 @@
 *.zip
 *.tar.gz
 *.ipynb
+*.pyc
 
 # ignore the skeleton_code folder
 skeleton_code/
-```"*.pyc" 
+
+# ignore python cache
+__pycache__/
+

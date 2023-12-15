@@ -19,3 +19,7 @@ skeleton_code/
 # ignore python cache
 __pycache__/
 
+
+
+# ignore folder HW1
+HW1/

@@ -47,7 +47,7 @@ class CNN(nn.Module):
             self.relu1 = nn.ReLU()
             self.conv2 = nn.Conv2d(8, 16, kernel_size=3, stride=2, padding=0)
             self.relu2 = nn.ReLU()
-            self.fc1 = nn.Linear(16*3*3, 320)
+            self.fc1 = nn.Linear(16*6*6, 320)
             self.relu3 = nn.ReLU()
             self.drop = nn.Dropout(p=dropout_prob)
             self.fc2 = nn.Linear(320, 120)
@@ -58,7 +58,7 @@ class CNN(nn.Module):
     def forward(self, x):
         # input should be of shape [b, c, w, h]
         x = x.view(-1, 1, 28, 28)
-        # conv and relu layers
+        # conv and relu layers  
         x = self.conv1(x)
         x = self.relu1(x)
 
@@ -73,7 +73,7 @@ class CNN(nn.Module):
         # max-pool layer if using it
         if not self.no_maxpool:
             x = self.maxpool2(x)
-        
+
         # prep for fully connected layer + relu
         x = torch.flatten(x, 1)
         x = self.fc1(x)

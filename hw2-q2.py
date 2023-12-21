@@ -204,10 +204,9 @@ def main():
     config = "{}-{}-{}-{}-{}".format(opt.learning_rate, opt.dropout, opt.l2_decay, opt.optimizer, opt.no_maxpool)
 
     plot(epochs, train_mean_losses, ylabel='Loss', name='CNN-training-loss-{}'.format(config))
-    plt.savefig('CNN-mean-training-loss-{}.pdf'.format(config), bbox_inches='tight')
-    plot(epochs, valid_accs, ylabel='Accuracy', name='CNN-validation-accuracy-{}'.format(config))
-    plt.savefig('CNN-validation-accuracy-{}.pdf'.format(config), bbox_inches='tight')
     
+    plot(epochs, valid_accs, ylabel='Accuracy', name='CNN-validation-accuracy-{}'.format(config))
+
     print('Number of trainable parameters: ', get_number_trainable_params(model))
 
 if __name__ == '__main__':

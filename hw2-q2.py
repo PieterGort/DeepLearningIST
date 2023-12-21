@@ -20,37 +20,71 @@ class CNN(nn.Module):
     def __init__(self, dropout_prob, no_maxpool=False):
         super(CNN, self).__init__()
         self.no_maxpool = no_maxpool
+
         if not no_maxpool:
             # Implementation for Q2.1
-            raise NotImplementedError
+            # convolutional layer with 8 output channels, kernel size of 3, stride of 1, and padding to preserve original image size
+            self.conv1 = nn.Conv2d(1, 8, kernel_size=3, stride=1, padding=1)
+            # implement relu activation
+            self.relu1 = nn.ReLU()
+            self.maxpool1 = nn.MaxPool2d(kernel_size=2, stride=2)
+            self.conv2 = nn.Conv2d(8, 16, kernel_size=3, stride=1, padding=0)
+            self.relu2 = nn.ReLU()
+            self.maxpool2 = nn.MaxPool2d(kernel_size=2, stride=2)
+            self.fc1 = nn.Linear(16*6*6, 320)
+            self.relu3 = nn.ReLU()
+            self.drop = nn.Dropout(p=dropout_prob)
+            self.fc2 = nn.Linear(320, 120)
+            self.relu4 = nn.ReLU()
+            self.fc3 = nn.Linear(120, 4)
+            # softmax is already included in the return statement
+
         else:
             # Implementation for Q2.2
-            raise NotImplementedError
-        
-        # Implementation for Q2.1 and Q2.2
-        raise NotImplementedError
+            # convolutional layer with 8 output channels, kernel size of 3, stride of 1, and padding to preserve original image size
+            self.conv1 = nn.Conv2d(1, 8, kernel_size=3, stride=2, padding=1)
+            # implement relu activation
+            self.relu1 = nn.ReLU()
+            self.conv2 = nn.Conv2d(8, 16, kernel_size=3, stride=2, padding=0)
+            self.relu2 = nn.ReLU()
+            self.fc1 = nn.Linear(16*3*3, 320)
+            self.relu3 = nn.ReLU()
+            self.drop = nn.Dropout(p=dropout_prob)
+            self.fc2 = nn.Linear(320, 120)
+            self.relu4 = nn.ReLU()
+            self.fc3 = nn.Linear(120, 4)
+            # softmax is already included in the return statement
         
     def forward(self, x):
         # input should be of shape [b, c, w, h]
+        x = x.view(-1, 1, 28, 28)
         # conv and relu layers
+        x = self.conv1(x)
+        x = self.relu1(x)
 
         # max-pool layer if using it
         if not self.no_maxpool:
-            raise NotImplementedError
-        
+            x = self.maxpool1(x)
+
         # conv and relu layers
-        
+        x = self.conv2(x)
+        x = self.relu2(x)
 
         # max-pool layer if using it
         if not self.no_maxpool:
-            raise NotImplementedError
+            x = self.maxpool2(x)
         
         # prep for fully connected layer + relu
+        x = torch.flatten(x, 1)
+        x = self.fc1(x)
+        x = self.relu3(x)
         
         # drop out
         x = self.drop(x)
 
         # second fully connected layer + relu
+        x = self.fc2(x)
+        x = self.relu4(x)
         
         # last fully connected layer
         x = self.fc3(x)
@@ -102,13 +136,13 @@ def plot(epochs, plottable, ylabel='', name=''):
 
 
 def get_number_trainable_params(model):
-    ## TO IMPLEMENT - REPLACE return 0
-    return 0
+    "Returns the number of trainable parameters in the Pytorch model"
+    return sum(p.numel() for p in model.parameters() if p.requires_grad)
 
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('-epochs', default=20, type=int,
+    parser.add_argument('-epochs', default=15, type=int,
                         help="""Number of epochs to train for. You should not
                         need to change this value for your plots.""")
     parser.add_argument('-batch_size', default=8, type=int,
@@ -170,7 +204,9 @@ def main():
     config = "{}-{}-{}-{}-{}".format(opt.learning_rate, opt.dropout, opt.l2_decay, opt.optimizer, opt.no_maxpool)
 
     plot(epochs, train_mean_losses, ylabel='Loss', name='CNN-training-loss-{}'.format(config))
+    plt.savefig('CNN-mean-training-loss-{}.pdf'.format(config), bbox_inches='tight')
     plot(epochs, valid_accs, ylabel='Accuracy', name='CNN-validation-accuracy-{}'.format(config))
+    plt.savefig('CNN-validation-accuracy-{}.pdf'.format(config), bbox_inches='tight')
     
     print('Number of trainable parameters: ', get_number_trainable_params(model))
 

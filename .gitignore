@@ -10,7 +10,6 @@
 *.tar
 *.zip
 *.tar.gz
-*.ipynb
 *.pyc
 findweightsbiases.py
 

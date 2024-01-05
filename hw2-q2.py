@@ -127,7 +127,7 @@ def evaluate(model, X, y):
     return n_correct / n_possible
 
 
-def plot(epochs, plottable, ylabel='', name=''):
+def plot(epochs, plottable, ylabel='', name='', model=None):
     plt.clf()
     plt.xlabel('Epoch')
     plt.ylabel(ylabel)
@@ -203,9 +203,9 @@ def main():
     # plot
     config = "{}-{}-{}-{}-{}".format(opt.learning_rate, opt.dropout, opt.l2_decay, opt.optimizer, opt.no_maxpool)
 
-    plot(epochs, train_mean_losses, ylabel='Loss', name='CNN-training-loss-{}'.format(config))
-    
-    plot(epochs, valid_accs, ylabel='Accuracy', name='CNN-validation-accuracy-{}'.format(config))
+    plot(epochs, train_mean_losses, ylabel='Loss', name='CNN-training-loss-{}'.format(config), model=model)
+
+    plot(epochs, valid_accs, ylabel='Accuracy', name='CNN-validation-accuracy-{}'.format(config), model=model)
 
     get_num_trainable_params(model)
     print('Number of trainable parameters: ', )

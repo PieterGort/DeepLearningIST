@@ -23,3 +23,5 @@ __pycache__/
 
 # ignore folder HW1
 HW1/
+
+data/

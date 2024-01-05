@@ -1,0 +1,6 @@
+Question2
+
+
+with maxpooling no. trainable params = 224892
+
+without maxpooling no trainable params = 224892

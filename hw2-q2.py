@@ -135,7 +135,7 @@ def plot(epochs, plottable, ylabel='', name=''):
     plt.savefig('%s.pdf' % (name), bbox_inches='tight')
 
 
-def get_number_trainable_params(model):
+def get_num_trainable_params(model):
     "Returns the number of trainable parameters in the Pytorch model"
     return sum(p.numel() for p in model.parameters() if p.requires_grad)
 
@@ -147,7 +147,7 @@ def main():
                         need to change this value for your plots.""")
     parser.add_argument('-batch_size', default=8, type=int,
                         help="Size of training batch.")
-    parser.add_argument('-learning_rate', type=float, default=0.01,
+    parser.add_argument('-learning_rate', type=float, default=0.1,
                         help="""Learning rate for parameter updates""")
     parser.add_argument('-l2_decay', type=float, default=0)
     parser.add_argument('-dropout', type=float, default=0.7)
@@ -207,7 +207,9 @@ def main():
     
     plot(epochs, valid_accs, ylabel='Accuracy', name='CNN-validation-accuracy-{}'.format(config))
 
-    print('Number of trainable parameters: ', get_number_trainable_params(model))
+    get_num_trainable_params(model)
+    print('Number of trainable parameters: ', )
+
 
 if __name__ == '__main__':
     main()

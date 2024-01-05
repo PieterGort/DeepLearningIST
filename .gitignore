@@ -24,3 +24,6 @@ __pycache__/
 HW1/
 
 data/
+
+rnn_attention_plots/
+attention_attention_plots/

@@ -207,8 +207,8 @@ def main():
 
     plot(epochs, valid_accs, ylabel='Accuracy', name='CNN-validation-accuracy-{}'.format(config), model=model)
 
-    get_num_trainable_params(model)
-    print('Number of trainable parameters: ', )
+    
+    print('Number of trainable parameters: ', get_num_trainable_params(model))
 
 
 if __name__ == '__main__':

@@ -31,7 +31,7 @@ class CNN(nn.Module):
             self.conv2 = nn.Conv2d(8, 16, kernel_size=3, stride=1, padding=0)
             self.relu2 = nn.ReLU()
             self.maxpool2 = nn.MaxPool2d(kernel_size=2, stride=2)
-            # fully connected layers
+            # fully connected layers receiving same input size
             self.fc1 = nn.Linear(16*6*6, 320)
             self.relu3 = nn.ReLU()
             self.drop = nn.Dropout(p=dropout_prob)
@@ -42,13 +42,13 @@ class CNN(nn.Module):
 
         else:
             # Implementation for Q2.2
-            # first block
+            # first block, different stride and padding opposed to maxpool
             self.conv1 = nn.Conv2d(1, 8, kernel_size=3, stride=2, padding=1)
             self.relu1 = nn.ReLU()
-            # second block
+            # second block, different stride and padding oppossed to maxpool
             self.conv2 = nn.Conv2d(8, 16, kernel_size=3, stride=2, padding=0)
             self.relu2 = nn.ReLU()
-            # fully connected layers
+            # fully connected layers receiving same input size
             self.fc1 = nn.Linear(16*6*6, 320)
             self.relu3 = nn.ReLU()
             self.drop = nn.Dropout(p=dropout_prob)

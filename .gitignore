@@ -12,6 +12,7 @@
 *.tar.gz
 *.pyc
 findweightsbiases.py
+*.txt
 
 # ignore the skeleton_code folder
 skeleton_code/
@@ -19,6 +20,8 @@ skeleton_code/
 # ignore python cache
 __pycache__/
 
+# ignore kaggle tutorial
+how-to-use-kaggle-tutorial.md
 
 # ignore folder HW1
 HW1/
@@ -27,6 +30,5 @@ data/
 storage/
 
 data/
-
 rnn_attention_plots/
 attention_attention_plots/

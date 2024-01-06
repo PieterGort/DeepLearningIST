@@ -22,6 +22,9 @@ __pycache__/
 
 # ignore folder HW1
 HW1/
+CNN_plots/
+data/
+storage/
 
 data/
 

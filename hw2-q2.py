@@ -23,14 +23,15 @@ class CNN(nn.Module):
 
         if not no_maxpool:
             # Implementation for Q2.1
-            # convolutional layer with 8 output channels, kernel size of 3, stride of 1, and padding to preserve original image size
+            # first block
             self.conv1 = nn.Conv2d(1, 8, kernel_size=3, stride=1, padding=1)
-            # implement relu activation
             self.relu1 = nn.ReLU()
             self.maxpool1 = nn.MaxPool2d(kernel_size=2, stride=2)
+            # second block
             self.conv2 = nn.Conv2d(8, 16, kernel_size=3, stride=1, padding=0)
             self.relu2 = nn.ReLU()
             self.maxpool2 = nn.MaxPool2d(kernel_size=2, stride=2)
+            # fully connected layers
             self.fc1 = nn.Linear(16*6*6, 320)
             self.relu3 = nn.ReLU()
             self.drop = nn.Dropout(p=dropout_prob)
@@ -41,12 +42,13 @@ class CNN(nn.Module):
 
         else:
             # Implementation for Q2.2
-            # convolutional layer with 8 output channels, kernel size of 3, stride of 1, and padding to preserve original image size
+            # first block
             self.conv1 = nn.Conv2d(1, 8, kernel_size=3, stride=2, padding=1)
-            # implement relu activation
             self.relu1 = nn.ReLU()
+            # second block
             self.conv2 = nn.Conv2d(8, 16, kernel_size=3, stride=2, padding=0)
             self.relu2 = nn.ReLU()
+            # fully connected layers
             self.fc1 = nn.Linear(16*6*6, 320)
             self.relu3 = nn.ReLU()
             self.drop = nn.Dropout(p=dropout_prob)
